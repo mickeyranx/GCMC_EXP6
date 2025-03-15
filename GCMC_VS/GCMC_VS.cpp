@@ -227,7 +227,6 @@ static void GCMC(
 
 
 static void simulate(string filename, double z, int thermal_time, int steps_between_measurements, int number_of_measurements) {
-    cout << "Thread: " << omp_get_thread_num() << "                  " << endl;
     //set seed for the RNG
     random_device rand_dev;
     mt19937 gen(rand_dev());
@@ -282,9 +281,17 @@ static void simulate(string filename, double z, int thermal_time, int steps_betw
 
 int main()
 {
+
     clock_t start = clock();
     string filename_1 = "particle_number.txt";
-    //omp_set_num_threads(3);
+
+    //no. measurements
+    int measurements = 1000;
+    //iterations between each measurement
+    int intervall = 1000;
+    //thermalize steps
+    int therm = 1000;
+    cout << "total iterations: " << therm + measurements * intervall << endl;
     cout << "max av. threads" << omp_get_max_threads() << endl;
     #pragma omp parallel 
     {
@@ -292,23 +299,24 @@ int main()
         {
         #pragma omp section
         {
-            simulate("particle_number_z=0.56.txt", 0.56, 1000, 1000, 10000);
+            simulate("particle_number_z=0.56.txt", 0.56, therm,intervall, measurements);
 
         }
         
         #pragma omp section
         {
-            simulate("particle_number_z=1.2.txt", 1.2, 1000, 1000, 10000);
+            simulate("particle_number_z=1.2.txt", 1.2, therm, intervall, measurements);
         }
         
         #pragma omp section
         {
-            simulate("particle_number_z=0.05.txt", 0.05, 1000, 1000, 10000);
+            simulate("particle_number_z=0.05.txt", 0.05, therm, intervall, measurements);
 
         }
         }
 
     }
+    
     
     clock_t end = clock();
     double elapsed = double(end - start) / CLOCKS_PER_SEC;
